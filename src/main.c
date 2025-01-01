@@ -15,6 +15,12 @@ typedef struct Tone
     int duration;
 } Tone;
 
+typedef struct Melody
+{
+    int numTones;
+    Tone *tones;
+} Melody;
+
 typedef struct Signal
 {
     short *samples; // Use short for 16-bit PCM audio
@@ -104,24 +110,58 @@ int main(void)
 {
     printf("\tHello Sailor!\n");
 
-    Signal result = generate_tone(TEST_TONE_HZ, 2);
+    Melody melody = {
+        .numTones = 3,
+        .tones = (Tone[]){
+            {220, 1},
+            {440, 1},
+            {880, 1},
+        },
+    };
+
+    Signal result = {
+        .samples = NULL,
+        .length = 0,
+    };
+
+    for (int i = 0; i < melody.numTones; i++)
+    {
+        Signal tone = generate_tone(melody.tones[i].frequency, melody.tones[i].duration);
+        if (tone.samples == NULL)
+        {
+            printf("\tFailed to generate tone\n");
+            return 1;
+        }
+
+        // Concatenate the tones
+        int oldLength = result.length;
+        result.length += tone.length;
+        result.samples = realloc(result.samples, result.length * sizeof(short));
+        for (int j = 0; j < tone.length; j++)
+        {
+            result.samples[oldLength + j] = tone.samples[j];
+        }
+
+        free(tone.samples); // Free the allocated memory after concatenation
+    }
+
     if (result.samples == NULL)
     {
-        printf("\tFailed to generate tone\n");
+        printf("\tFailed to generate melody\n");
         return 1;
     }
 
-    printf("\tGenerated tone\n");
+    printf("\tGenerated melody\n");
 
     int playResult = play_signal(&result);
     if (playResult != 0)
     {
-        printf("\tFailed to play tone\n");
+        printf("\tFailed to play melody\n");
         free(result.samples); // Free the allocated memory in case of failure
         return 1;
     }
 
-    free(result.samples); // Free the allocated memory after playback
+    free(result.samples); // Free the allocated memory after playing
 
     return 0;
 }
