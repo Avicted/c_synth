@@ -9,10 +9,19 @@
 #define TEST_TONE_HZ 220
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
 
+typedef enum TONE_WAVEFORM
+{
+    TONE_WAVEFORM_SINE,
+    TONE_WAVEFORM_SQUARE,
+    TONE_WAVEFORM_TRIANGLE,
+    TONE_WAVEFORM_SAWTOOTH,
+} TONE_WAVEFORM;
+
 typedef struct Tone
 {
     int frequency;
     float duration;
+    TONE_WAVEFORM waveform;
 } Tone;
 
 typedef struct Melody
@@ -27,7 +36,7 @@ typedef struct Signal
     int length;
 } Signal;
 
-Signal generate_tone(int frequency, float duration_seconds)
+Signal generate_tone(int frequency, float duration_seconds, TONE_WAVEFORM waveform)
 {
     int toneLengthInSamples = duration_seconds * SAMPLE_RATE;
     short *tone = malloc(toneLengthInSamples * sizeof(short)); // Dynamically allocate memory
@@ -40,7 +49,28 @@ Signal generate_tone(int frequency, float duration_seconds)
     // Generate the tone
     for (int i = 0; i < toneLengthInSamples; i++)
     {
-        tone[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) * AMPLITUDE_SCALING); // Use amplitude scaling factor
+        if (waveform == TONE_WAVEFORM_SINE)
+        {
+            tone[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) * AMPLITUDE_SCALING); // Use amplitude scaling factor
+        }
+        else if (waveform == TONE_WAVEFORM_SQUARE)
+        {
+            tone[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) > 0 ? AMPLITUDE_SCALING : -AMPLITUDE_SCALING);
+        }
+        else if (waveform == TONE_WAVEFORM_TRIANGLE)
+        {
+            float period = (float)SAMPLE_RATE / frequency;
+            float currentPeriod = fmod(i / period, 1.0);
+            float triangle = 2.0 * fabs(2.0 * currentPeriod - 1.0) - 1.0;
+            tone[i] = (short)(triangle * AMPLITUDE_SCALING);
+        }
+        else if (waveform == TONE_WAVEFORM_SAWTOOTH)
+        {
+            float period = SAMPLE_RATE / frequency;
+            float currentPeriod = i / period;
+            float sawtooth = 2 * (currentPeriod - floor(currentPeriod)) - 1;
+            tone[i] = (short)(sawtooth * AMPLITUDE_SCALING);
+        }
     }
 
     return signal;
@@ -111,11 +141,12 @@ int main(void)
     printf("\tHello Sailor!\n");
 
     Melody melody = {
-        .numTones = 3,
+        .numTones = 4,
         .tones = (Tone[]){
-            {220, 1.5},
-            {440, 1.0},
-            {880, 0.5},
+            {440, 1.0, TONE_WAVEFORM_SINE},
+            {440, 1.0, TONE_WAVEFORM_SAWTOOTH},
+            {440, 1.0, TONE_WAVEFORM_SQUARE},
+            {440, 1.0, TONE_WAVEFORM_TRIANGLE},
         },
     };
 
@@ -126,7 +157,7 @@ int main(void)
 
     for (int i = 0; i < melody.numTones; i++)
     {
-        Signal tone = generate_tone(melody.tones[i].frequency, melody.tones[i].duration);
+        Signal tone = generate_tone(melody.tones[i].frequency, melody.tones[i].duration, melody.tones[i].waveform);
         if (tone.samples == NULL)
         {
             printf("\tFailed to generate tone\n");
