@@ -18,19 +18,19 @@
 
 unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0;
 
-typedef enum note_WAVEFORM
+typedef enum NOTE_WAVEFORM
 {
-    note_WAVEFORM_SINE,
-    note_WAVEFORM_SQUARE,
-    note_WAVEFORM_TRIANGLE,
-    note_WAVEFORM_SAWTOOTH,
-} note_WAVEFORM;
+    NOTE_WAVEFORM_SINE,
+    NOTE_WAVEFORM_SQUARE,
+    NOTE_WAVEFORM_TRIANGLE,
+    NOTE_WAVEFORM_SAWTOOTH,
+} NOTE_WAVEFORM;
 
 typedef struct Note
 {
     int frequency;
     float duration;
-    note_WAVEFORM waveform;
+    NOTE_WAVEFORM waveform;
 } Note;
 
 typedef struct Melody
@@ -45,7 +45,7 @@ typedef struct Signal
     int length;
 } Signal;
 
-Signal *generate_note(int frequency, float duration_seconds, note_WAVEFORM waveform)
+Signal *generate_note(int frequency, float duration_seconds, NOTE_WAVEFORM waveform)
 {
     const int noteLengthInSamples = duration_seconds * SAMPLE_RATE;
 
@@ -70,22 +70,22 @@ Signal *generate_note(int frequency, float duration_seconds, note_WAVEFORM wavef
     // Generate the note
     for (int i = 0; i < noteLengthInSamples; i++)
     {
-        if (waveform == note_WAVEFORM_SINE)
+        if (waveform == NOTE_WAVEFORM_SINE)
         {
             note[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) * AMPLITUDE_SCALING); // Use amplitude scaling factor
         }
-        else if (waveform == note_WAVEFORM_SQUARE)
+        else if (waveform == NOTE_WAVEFORM_SQUARE)
         {
             note[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) > 0 ? AMPLITUDE_SCALING : -AMPLITUDE_SCALING);
         }
-        else if (waveform == note_WAVEFORM_TRIANGLE)
+        else if (waveform == NOTE_WAVEFORM_TRIANGLE)
         {
             const float period = (float)SAMPLE_RATE / frequency;
             const float currentPeriod = fmod(i / period, 1.0);
             const float triangle = 2.0 * fabs(2.0 * currentPeriod - 1.0) - 1.0;
             note[i] = (short)(triangle * AMPLITUDE_SCALING);
         }
-        else if (waveform == note_WAVEFORM_SAWTOOTH)
+        else if (waveform == NOTE_WAVEFORM_SAWTOOTH)
         {
             const float period = SAMPLE_RATE / frequency;
             const float currentPeriod = i / period;
@@ -170,19 +170,19 @@ int main(void)
 
     notes[0].frequency = 440;
     notes[0].duration = 0.5;
-    notes[0].waveform = note_WAVEFORM_SINE;
+    notes[0].waveform = NOTE_WAVEFORM_SINE;
 
     notes[1].frequency = 440;
     notes[1].duration = 0.5;
-    notes[1].waveform = note_WAVEFORM_SAWTOOTH;
+    notes[1].waveform = NOTE_WAVEFORM_SAWTOOTH;
 
     notes[2].frequency = 440;
     notes[2].duration = 0.5;
-    notes[2].waveform = note_WAVEFORM_SQUARE;
+    notes[2].waveform = NOTE_WAVEFORM_SQUARE;
 
     notes[3].frequency = 440;
     notes[3].duration = 0.5;
-    notes[3].waveform = note_WAVEFORM_TRIANGLE;
+    notes[3].waveform = NOTE_WAVEFORM_TRIANGLE;
 
     melody->numnotes = noteCount;
     melody->notes = notes;
