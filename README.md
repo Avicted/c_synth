@@ -1,5 +1,5 @@
 # Tone generator in C
-With portaudio.h
+With portaudio.h. Just a simple example.
 
 ```bash
 make run
