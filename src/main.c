@@ -4,29 +4,39 @@
 
 #include <portaudio.h>
 
+// Write straight to the NULL pointer to crash the program
+#define ASSERT(condition, message, param) \
+    if (!(condition))                     \
+    {                                     \
+        printf(message, param);           \
+        *((int *)0) = 0;                  \
+    }
+
 #define PI acos(-1)
 #define SAMPLE_RATE 44100
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
 
-typedef enum TONE_WAVEFORM
+unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0;
+
+typedef enum note_WAVEFORM
 {
-    TONE_WAVEFORM_SINE,
-    TONE_WAVEFORM_SQUARE,
-    TONE_WAVEFORM_TRIANGLE,
-    TONE_WAVEFORM_SAWTOOTH,
-} TONE_WAVEFORM;
+    note_WAVEFORM_SINE,
+    note_WAVEFORM_SQUARE,
+    note_WAVEFORM_TRIANGLE,
+    note_WAVEFORM_SAWTOOTH,
+} note_WAVEFORM;
 
 typedef struct Note
 {
     int frequency;
     float duration;
-    TONE_WAVEFORM waveform;
+    note_WAVEFORM waveform;
 } Note;
 
 typedef struct Melody
 {
-    int numTones;
-    Note *tones;
+    int numnotes;
+    Note *notes;
 } Melody;
 
 typedef struct Signal
@@ -35,40 +45,52 @@ typedef struct Signal
     int length;
 } Signal;
 
-Signal generate_tone(int frequency, float duration_seconds, TONE_WAVEFORM waveform)
+Signal *generate_note(int frequency, float duration_seconds, note_WAVEFORM waveform)
 {
-    int toneLengthInSamples = duration_seconds * SAMPLE_RATE;
-    short *tone = calloc(toneLengthInSamples, sizeof(short)); // Dynamically allocate memory with zero initialization
+    const int noteLengthInSamples = duration_seconds * SAMPLE_RATE;
 
-    Signal signal = {
-        .samples = tone,
-        .length = toneLengthInSamples,
-    };
+    // Dynamically allocate memory with zero initialization
+    short *note = calloc(noteLengthInSamples, sizeof(short));
+    CPU_MEMORY_ALLOCATED_IN_BYTES += noteLengthInSamples * sizeof(short);
 
-    // Generate the tone
-    for (int i = 0; i < toneLengthInSamples; i++)
+    Signal *signal = calloc(1, sizeof(Signal));
+    CPU_MEMORY_ALLOCATED_IN_BYTES += sizeof(Signal);
+
+    if (signal == NULL)
     {
-        if (waveform == TONE_WAVEFORM_SINE)
+        CPU_MEMORY_ALLOCATED_IN_BYTES -= noteLengthInSamples * sizeof(short);
+        free(note);
+        return NULL;
+    }
+
+    // Set the signal properties
+    signal->samples = note;
+    signal->length = noteLengthInSamples;
+
+    // Generate the note
+    for (int i = 0; i < noteLengthInSamples; i++)
+    {
+        if (waveform == note_WAVEFORM_SINE)
         {
-            tone[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) * AMPLITUDE_SCALING); // Use amplitude scaling factor
+            note[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) * AMPLITUDE_SCALING); // Use amplitude scaling factor
         }
-        else if (waveform == TONE_WAVEFORM_SQUARE)
+        else if (waveform == note_WAVEFORM_SQUARE)
         {
-            tone[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) > 0 ? AMPLITUDE_SCALING : -AMPLITUDE_SCALING);
+            note[i] = (short)(sin(2 * PI * frequency * i / SAMPLE_RATE) > 0 ? AMPLITUDE_SCALING : -AMPLITUDE_SCALING);
         }
-        else if (waveform == TONE_WAVEFORM_TRIANGLE)
+        else if (waveform == note_WAVEFORM_TRIANGLE)
         {
-            float period = (float)SAMPLE_RATE / frequency;
-            float currentPeriod = fmod(i / period, 1.0);
-            float triangle = 2.0 * fabs(2.0 * currentPeriod - 1.0) - 1.0;
-            tone[i] = (short)(triangle * AMPLITUDE_SCALING);
+            const float period = (float)SAMPLE_RATE / frequency;
+            const float currentPeriod = fmod(i / period, 1.0);
+            const float triangle = 2.0 * fabs(2.0 * currentPeriod - 1.0) - 1.0;
+            note[i] = (short)(triangle * AMPLITUDE_SCALING);
         }
-        else if (waveform == TONE_WAVEFORM_SAWTOOTH)
+        else if (waveform == note_WAVEFORM_SAWTOOTH)
         {
-            float period = SAMPLE_RATE / frequency;
-            float currentPeriod = i / period;
-            float sawtooth = 2 * (currentPeriod - floor(currentPeriod)) - 1;
-            tone[i] = (short)(sawtooth * AMPLITUDE_SCALING);
+            const float period = SAMPLE_RATE / frequency;
+            const float currentPeriod = i / period;
+            const float sawtooth = 2 * (currentPeriod - floor(currentPeriod)) - 1;
+            note[i] = (short)(sawtooth * AMPLITUDE_SCALING);
         }
     }
 
@@ -139,43 +161,71 @@ int main(void)
 {
     printf("\tHello Sailor!\n");
 
-    Melody melody = {
-        .numTones = 4, // @Note(Victor): Remember to change this value when adding or removing tones
-        .tones = (Note[]){
-            {440, 0.5, TONE_WAVEFORM_SINE},
-            {440, 0.5, TONE_WAVEFORM_SAWTOOTH},
-            {440, 0.5, TONE_WAVEFORM_SQUARE},
-            {440, 0.5, TONE_WAVEFORM_TRIANGLE},
-        },
-    };
+    // Create the melody
+    unsigned int noteCount = 4;
+    Note *notes = calloc(noteCount, sizeof(Note));
 
-    Signal result = {
-        .samples = NULL,
-        .length = 0,
-    };
+    Melody *melody = calloc(1, sizeof(Melody));
+    CPU_MEMORY_ALLOCATED_IN_BYTES += sizeof(Melody);
 
-    for (int i = 0; i < melody.numTones; i++)
+    notes[0].frequency = 440;
+    notes[0].duration = 0.5;
+    notes[0].waveform = note_WAVEFORM_SINE;
+
+    notes[1].frequency = 440;
+    notes[1].duration = 0.5;
+    notes[1].waveform = note_WAVEFORM_SAWTOOTH;
+
+    notes[2].frequency = 440;
+    notes[2].duration = 0.5;
+    notes[2].waveform = note_WAVEFORM_SQUARE;
+
+    notes[3].frequency = 440;
+    notes[3].duration = 0.5;
+    notes[3].waveform = note_WAVEFORM_TRIANGLE;
+
+    melody->numnotes = noteCount;
+    melody->notes = notes;
+
+    CPU_MEMORY_ALLOCATED_IN_BYTES += noteCount * sizeof(Note);
+
+    Signal *result = calloc(1, sizeof(Signal));
+    CPU_MEMORY_ALLOCATED_IN_BYTES += sizeof(Signal);
+
+    // Free the initial memory allocated for result->samples (1 short)
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(short);
+    free(result->samples);
+
+    for (int i = 0; i < melody->numnotes; i++)
     {
-        Signal tone = generate_tone(melody.tones[i].frequency, melody.tones[i].duration, melody.tones[i].waveform);
-        if (tone.samples == NULL)
+        Signal *signal = generate_note(melody->notes[i].frequency, melody->notes[i].duration, melody->notes[i].waveform);
+        if (signal->samples == NULL)
         {
-            printf("\tFailed to generate tone\n");
+            printf("\tFailed to generate note\n");
             return 1;
         }
 
-        // Concatenate the tones
-        int oldLength = result.length;
-        result.length += tone.length;
-        result.samples = realloc(result.samples, result.length * sizeof(short));
-        for (int j = 0; j < tone.length; j++)
+        // Concatenate the notes
+        int oldLength = result->length;
+        result->length += signal->length;
+
+        // Reallocate memory for the samples array
+        result->samples = realloc(result->samples, result->length * sizeof(short));
+        CPU_MEMORY_ALLOCATED_IN_BYTES += signal->length * sizeof(short);
+
+        // Copy the new samples
+        for (int j = 0; j < signal->length; j++)
         {
-            result.samples[oldLength + j] = tone.samples[j];
+            result->samples[oldLength + j] = signal->samples[j];
         }
 
-        free(tone.samples); // Free the allocated memory after concatenation
+        // Free the individual signal's samples and the signal struct
+        CPU_MEMORY_ALLOCATED_IN_BYTES -= signal->length * sizeof(short);
+        free(signal->samples);
+        free(signal);
     }
 
-    if (result.samples == NULL)
+    if (result->samples == NULL)
     {
         printf("\tFailed to generate melody\n");
         return 1;
@@ -183,15 +233,41 @@ int main(void)
 
     printf("\tGenerated melody\n");
 
-    int playResult = play_signal(&result);
+    int playResult = play_signal(result);
     if (playResult != 0)
     {
         printf("\tFailed to play melody\n");
-        free(result.samples); // Free the allocated memory in case of failure
+        CPU_MEMORY_ALLOCATED_IN_BYTES -= result->length * sizeof(short);
+        free(result->samples);
+        free(result);
         return 1;
     }
 
-    free(result.samples); // Free the allocated memory after playing
+    // Free the result's samples and struct
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= result->length * sizeof(short);
+    free(result->samples);
+
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Signal);
+    free(result);
+
+    // Free the melody's notes and struct
+    for (int i = 0; i < melody->numnotes; i++)
+    {
+        CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Note);
+    }
+
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= melody->numnotes * sizeof(Note);
+
+    free(melody->notes);
+    free(melody);
+
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Melody);
+
+    printf("\tCPU_MEMORY_ALLOCATED in kilobytes: %llu\n", CPU_MEMORY_ALLOCATED_IN_BYTES / 1024);
+
+    // Final check
+    const int MEMORY_LEAK_THRESHOLD = 256;
+    ASSERT(CPU_MEMORY_ALLOCATED_IN_BYTES <= MEMORY_LEAK_THRESHOLD, "\tERROR: Memory leak detected! with a threshold of %d bytes", MEMORY_LEAK_THRESHOLD);
 
     return 0;
 }

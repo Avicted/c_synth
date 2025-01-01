@@ -4,6 +4,11 @@
         "valarray": "c",
         "math.h": "c",
         "portaudio.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "bitset": "c",
+        "string_view": "c",
+        "__locale": "c",
+        "string": "c",
+        "chrono": "c"
     }
 }
