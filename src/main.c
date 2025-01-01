@@ -16,17 +16,17 @@ typedef enum TONE_WAVEFORM
     TONE_WAVEFORM_SAWTOOTH,
 } TONE_WAVEFORM;
 
-typedef struct Tone
+typedef struct Note
 {
     int frequency;
     float duration;
     TONE_WAVEFORM waveform;
-} Tone;
+} Note;
 
 typedef struct Melody
 {
     int numTones;
-    Tone *tones;
+    Note *tones;
 } Melody;
 
 typedef struct Signal
@@ -141,7 +141,7 @@ int main(void)
 
     Melody melody = {
         .numTones = 4, // @Note(Victor): Remember to change this value when adding or removing tones
-        .tones = (Tone[]){
+        .tones = (Note[]){
             {440, 0.5, TONE_WAVEFORM_SINE},
             {440, 0.5, TONE_WAVEFORM_SAWTOOTH},
             {440, 0.5, TONE_WAVEFORM_SQUARE},
