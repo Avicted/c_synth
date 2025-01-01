@@ -141,12 +141,12 @@ int main(void)
     printf("\tHello Sailor!\n");
 
     Melody melody = {
-        .numTones = 4,
+        .numTones = 4, // @Note(Victor): Remember to change this value when adding or removing tones
         .tones = (Tone[]){
-            {440, 1.0, TONE_WAVEFORM_SINE},
-            {440, 1.0, TONE_WAVEFORM_SAWTOOTH},
-            {440, 1.0, TONE_WAVEFORM_SQUARE},
-            {440, 1.0, TONE_WAVEFORM_TRIANGLE},
+            {440, 0.5, TONE_WAVEFORM_SINE},
+            {440, 0.5, TONE_WAVEFORM_SAWTOOTH},
+            {440, 0.5, TONE_WAVEFORM_SQUARE},
+            {440, 0.5, TONE_WAVEFORM_TRIANGLE},
         },
     };
 
