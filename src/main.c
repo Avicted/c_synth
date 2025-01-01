@@ -6,7 +6,6 @@
 
 #define PI acos(-1)
 #define SAMPLE_RATE 44100
-#define TEST_TONE_HZ 220
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
 
 typedef enum TONE_WAVEFORM
@@ -39,7 +38,7 @@ typedef struct Signal
 Signal generate_tone(int frequency, float duration_seconds, TONE_WAVEFORM waveform)
 {
     int toneLengthInSamples = duration_seconds * SAMPLE_RATE;
-    short *tone = malloc(toneLengthInSamples * sizeof(short)); // Dynamically allocate memory
+    short *tone = calloc(toneLengthInSamples, sizeof(short)); // Dynamically allocate memory with zero initialization
 
     Signal signal = {
         .samples = tone,
