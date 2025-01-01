@@ -12,7 +12,7 @@
 typedef struct Tone
 {
     int frequency;
-    int duration;
+    float duration;
 } Tone;
 
 typedef struct Melody
@@ -27,7 +27,7 @@ typedef struct Signal
     int length;
 } Signal;
 
-Signal generate_tone(int frequency, int duration_seconds)
+Signal generate_tone(int frequency, float duration_seconds)
 {
     int toneLengthInSamples = duration_seconds * SAMPLE_RATE;
     short *tone = malloc(toneLengthInSamples * sizeof(short)); // Dynamically allocate memory
@@ -113,9 +113,9 @@ int main(void)
     Melody melody = {
         .numTones = 3,
         .tones = (Tone[]){
-            {220, 1},
-            {440, 1},
-            {880, 1},
+            {220, 1.5},
+            {440, 1.0},
+            {880, 0.5},
         },
     };
 
