@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -std=c23 -Wall -ggdb
+CFLAGS = -std=c23 -O0 -Wall -ggdb
 LINKER_FLAGS = -lm -lportaudio
 
 # Directories
