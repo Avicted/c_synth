@@ -157,6 +157,23 @@ int play_signal(Signal *signal)
     return 0;
 }
 
+void cleanup_memory(Signal *signal, Melody *melody)
+{
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= signal->length * sizeof(short);
+    free(signal->samples);
+    free(signal);
+
+    for (int i = 0; i < melody->numnotes; i++)
+    {
+        CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Note);
+    }
+
+    CPU_MEMORY_ALLOCATED_IN_BYTES -= melody->numnotes * sizeof(Note);
+
+    free(melody->notes);
+    free(melody);
+}
+
 int main(void)
 {
     printf("\tHello Sailor!\n");
@@ -192,7 +209,6 @@ int main(void)
     Signal *result = calloc(1, sizeof(Signal));
     CPU_MEMORY_ALLOCATED_IN_BYTES += sizeof(Signal);
 
-    // Free the initial memory allocated for result->samples (1 short)
     CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(short);
     free(result->samples);
 
@@ -238,31 +254,11 @@ int main(void)
     {
         printf("\tFailed to play melody\n");
         CPU_MEMORY_ALLOCATED_IN_BYTES -= result->length * sizeof(short);
-        free(result->samples);
-        free(result);
+        cleanup_memory(result, melody);
         return 1;
     }
 
-    // Free the result's samples and struct
-    CPU_MEMORY_ALLOCATED_IN_BYTES -= result->length * sizeof(short);
-    free(result->samples);
-
-    CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Signal);
-    free(result);
-
-    // Free the melody's notes and struct
-    for (int i = 0; i < melody->numnotes; i++)
-    {
-        CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Note);
-    }
-
-    CPU_MEMORY_ALLOCATED_IN_BYTES -= melody->numnotes * sizeof(Note);
-
-    free(melody->notes);
-    free(melody);
-
-    CPU_MEMORY_ALLOCATED_IN_BYTES -= sizeof(Melody);
-
+    cleanup_memory(result, melody);
     printf("\tCPU_MEMORY_ALLOCATED in kilobytes: %llu\n", CPU_MEMORY_ALLOCATED_IN_BYTES / 1024);
 
     // Final check

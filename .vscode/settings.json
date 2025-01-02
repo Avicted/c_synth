@@ -9,6 +9,7 @@
         "string_view": "c",
         "__locale": "c",
         "string": "c",
-        "chrono": "c"
+        "chrono": "c",
+        "functional": "c"
     }
 }
