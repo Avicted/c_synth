@@ -10,6 +10,8 @@
         "__locale": "c",
         "string": "c",
         "chrono": "c",
-        "functional": "c"
+        "functional": "c",
+        "random": "c",
+        "system_error": "c"
     }
 }

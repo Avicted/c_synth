@@ -1,6 +1,6 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -std=c23 -O0 -Wall -ggdb
+CFLAGS = -std=c23 -O0 -ggdb -Wall -Werror -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function
 LINKER_FLAGS = -lm -lportaudio
 
 # Directories
