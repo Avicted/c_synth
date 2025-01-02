@@ -20,7 +20,7 @@
 #define SAMPLE_RATE 44100
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
 
-unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0;
+unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0ULL;
 
 typedef enum NOTE_WAVEFORM
 {
