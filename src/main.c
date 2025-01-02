@@ -269,7 +269,7 @@ int main(void)
     printf("\tCPU_MEMORY_ALLOCATED in kilobytes: %llu\n", CPU_MEMORY_ALLOCATED_IN_BYTES / 1024);
 
     // Final check
-    const unsigned long long MEMORY_LEAK_THRESHOLD = 256;
+    const unsigned long long MEMORY_LEAK_THRESHOLD = 256ULL;
     ASSERT(CPU_MEMORY_ALLOCATED_IN_BYTES <= MEMORY_LEAK_THRESHOLD, "\tERROR: Memory leak detected! with a threshold of %lld bytes", MEMORY_LEAK_THRESHOLD);
 
     return 0;
