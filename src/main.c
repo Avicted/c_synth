@@ -12,6 +12,10 @@
         *((int *)0) = 0;                  \
     }
 
+// Let's be explicit about the meaning of static in different contexts
+#define internal static
+#define local_persist static
+
 #define PI acos(-1)
 #define SAMPLE_RATE 44100
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
@@ -45,7 +49,8 @@ typedef struct Signal
     int length;
 } Signal;
 
-Signal *generate_note(int frequency, float duration_seconds, NOTE_WAVEFORM waveform)
+internal Signal *
+generate_note(int frequency, float duration_seconds, NOTE_WAVEFORM waveform)
 {
     const int noteLengthInSamples = duration_seconds * SAMPLE_RATE;
 
@@ -97,7 +102,8 @@ Signal *generate_note(int frequency, float duration_seconds, NOTE_WAVEFORM wavef
     return signal;
 }
 
-int play_signal(Signal *signal)
+internal int
+play_signal(Signal *signal)
 {
     PaError err;
     err = Pa_Initialize();
@@ -157,7 +163,8 @@ int play_signal(Signal *signal)
     return 0;
 }
 
-void cleanup_memory(Signal *signal, Melody *melody)
+internal void
+cleanup_memory(Signal *signal, Melody *melody)
 {
     CPU_MEMORY_ALLOCATED_IN_BYTES -= signal->length * sizeof(short);
     free(signal->samples);
