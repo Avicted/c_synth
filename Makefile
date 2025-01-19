@@ -1,7 +1,7 @@
 # Compiler and flags
-CC = gcc
-CFLAGS = -std=c23 -O0 -ggdb -Wall -Werror -Wextra -Wpedantic -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function
-LINKER_FLAGS = -lm -lportaudio
+CC = clang
+CFLAGS = -std=c23 -O0 -ggdb -fsanitize=address -Wall -Werror -Wextra -Wpedantic
+LDFLAGS = -lm -lportaudio
 
 # Directories
 SRC_DIR = src
@@ -18,12 +18,12 @@ all: $(OUT)
 # Rule to link object files and generate the output binary
 $(OUT): $(OBJS)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(OBJS) -o $(OUT) $(CFLAGS) $(LINKER_FLAGS)
+	$(CC) $(OBJS) -o $(OUT) $(CFLAGS) $(LDFLAGS)
 
 # Rule to compile source file into object file
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
-	$(CC) -c $< -o $@ $(CFLAGS) $(LINKER_FLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -rf $(BUILD_DIR)
