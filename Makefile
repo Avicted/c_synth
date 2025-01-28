@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = clang
 CFLAGS = -std=c23 -O0 -ggdb -fsanitize=address -Wall -Werror -Wextra -Wpedantic
-LDFLAGS = -lm -lportaudio
+LDFLAGS = -lm -lportaudio -fsanitize=address
 
 # Directories
 SRC_DIR = src
@@ -23,7 +23,7 @@ $(OUT): $(OBJS)
 # Rule to compile source file into object file
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
-	$(CC) -c $< -o $@ $(CFLAGS) $(LDFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -rf $(BUILD_DIR)

@@ -4,13 +4,15 @@
 
 #include <portaudio.h>
 
-// Write straight to the NULL pointer to crash the program
-#define ASSERT(condition, message, param) \
-    if (!(condition))                     \
-    {                                     \
-        printf(message, param);           \
-        *((int *)0) = 0;                  \
-    }
+#define ASSERT(condition, message, ...)            \
+    do                                             \
+    {                                              \
+        if (!(condition))                          \
+        {                                          \
+            fprintf(stderr, message, __VA_ARGS__); \
+            __builtin_trap();                      \
+        }                                          \
+    } while (0)
 
 // Let's be explicit about the meaning of static in different contexts
 #define internal static
