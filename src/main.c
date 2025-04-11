@@ -17,12 +17,13 @@
 // Let's be explicit about the meaning of static in different contexts
 #define internal static
 #define local_persist static
+#define global_variable static
 
 #define PI acos(-1)
 #define SAMPLE_RATE 44100
 #define AMPLITUDE_SCALING 3000 // 16-bit amplitude scaling factor
 
-unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0ULL;
+global_variable unsigned long long CPU_MEMORY_ALLOCATED_IN_BYTES = 0ULL;
 
 typedef enum NOTE_WAVEFORM
 {

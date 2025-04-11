@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = clang
-CFLAGS = -std=c23 -O0 -ggdb -fsanitize=address -Wall -Werror -Wextra -Wpedantic
-LDFLAGS = -lm -lportaudio -fsanitize=address
+CFLAGS = -std=c23 -O0 -ggdb -Wall -Werror -Wextra -Wpedantic
+LDFLAGS = -lm -lportaudio
 
 # Directories
 SRC_DIR = src
