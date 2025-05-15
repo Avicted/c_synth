@@ -13,3 +13,7 @@ make run
 ```
 
 VSCode Ctrl+F5 to debug
+
+
+## License
+MIT License
